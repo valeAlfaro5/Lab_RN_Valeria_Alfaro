@@ -1,0 +1,158 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "fa11ba5c-c01c-43d3-86e8-19a7b7400afa",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import DnnLib\n",
+    "import json\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "e02a3552-4536-4d93-9a79-98c64ca89055",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#carga de datos\n",
+    "with open(\"mnist_mlp_pretty.json\", \"r\") as f:\n",
+    "    datos = json.load(f)\n",
+    "\n",
+    "#carga imagenes y labels\n",
+    "data = np.load(\"mnist_train.npz\")\n",
+    "images = data[\"images\"]\n",
+    "labels = data[\"labels\"]\n",
+    "\n",
+    "#probar imagenes\n",
+    "c = images.reshape(-1, 784)\n",
+    "c = c/255\n",
+    "\n",
+    "#capa1\n",
+    "w1 = np.array(datos[\"layers\"][0][\"W\"])\n",
+    "b1 = np.array(datos[\"layers\"][0][\"b\"])\n",
+    "\n",
+    "#capa2\n",
+    "w2 = np.array(datos[\"layers\"][1][\"W\"])\n",
+    "b2 = np.array(datos[\"layers\"][1][\"b\"])\n",
+    "\n",
+    "#activación por capa\n",
+    "activate1 = datos[\"layers\"][0][\"activation\"]\n",
+    "activate2 = datos[\"layers\"][1][\"activation\"]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "54b23274-7c71-418c-b5d3-d73db638e5c1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#definir capas densas (ambas son densas segun el json)\n",
+    "#primera capa tiene 784 entradas y 128 salidas, activacion relu\n",
+    "layer1 = DnnLib.DenseLayer(784, 128, DnnLib.ActivationType.RELU)\n",
+    "#segunda capa tiene 128 entradas(de capa 1) y 10 de salida, activacion softmax\n",
+    "layer2 = DnnLib.DenseLayer(128, 10, DnnLib.ActivationType.SOFTMAX)\n",
+    "\n",
+    "#definir pesos y biases tomados del archivo\n",
+    "#transponer para evitar errores\n",
+    "layer1.weights = w1.T\n",
+    "layer1.bias = b1.T\n",
+    "\n",
+    "layer2.weights = w2.T\n",
+    "layer2.bias = b2.T\n",
+    "\n",
+    "x = np.random.rand(1, 784)\n",
+    "\n",
+    "output = layer1.forward(x)\n",
+    "salida = layer2.forward(output)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "6dc25efe-5742-44d2-a4da-2f883223dc46",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Salida capa 1: (1, 128)\n",
+      "Salida capa 2: (1, 10)\n",
+      "Predicción: 0.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "#predicciones\n",
+    "predict = np.argmax(salida, axis =1)\n",
+    "#acurracy\n",
+    "acurracy = np.mean(predict == x)\n",
+    "\n",
+    "print(\"Salida capa 1:\", output.shape)\n",
+    "print(\"Salida capa 2:\", salida.shape)\n",
+    "print(\"Predicción:\", acurracy)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "73df5400-40c0-4321-becd-afed43efcf76",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Predicción: 0.10218333333333333\n"
+     ]
+    }
+   ],
+   "source": [
+    " out = layer1.forward(c)\n",
+    "sal = layer2.forward(out)\n",
+    "\n",
+    "predict = np.argmax(salida, axis =1)\n",
+    "#acurracy\n",
+    "acurracy = np.mean(predict == labels)\n",
+    "\n",
+    "print(\"Predicción:\", acurracy)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5e2d9b94-9ac4-4a06-abc3-158d3f3571ca",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.18"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
