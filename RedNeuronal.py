@@ -10,7 +10,7 @@ with open("mnist_mlp_pretty.json", "r") as f:
     datos = json.load(f)
 
 #carga imagenes y labels
-data = np.load("mnist_train.npz")
+data = np.load("mnist_test.npz")
 images = data["images"]
 labels = data["labels"]
 
