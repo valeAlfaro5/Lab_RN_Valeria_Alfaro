@@ -1,158 +1,175 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "id": "fa11ba5c-c01c-43d3-86e8-19a7b7400afa",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import numpy as np\n",
-    "import DnnLib\n",
-    "import json\n",
-    "import matplotlib.pyplot as plt"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 8,
-   "id": "e02a3552-4536-4d93-9a79-98c64ca89055",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "#carga de datos\n",
-    "with open(\"mnist_mlp_pretty.json\", \"r\") as f:\n",
-    "    datos = json.load(f)\n",
-    "\n",
-    "#carga imagenes y labels\n",
-    "data = np.load(\"mnist_train.npz\")\n",
-    "images = data[\"images\"]\n",
-    "labels = data[\"labels\"]\n",
-    "\n",
-    "#probar imagenes\n",
-    "c = images.reshape(-1, 784)\n",
-    "c = c/255\n",
-    "\n",
-    "#capa1\n",
-    "w1 = np.array(datos[\"layers\"][0][\"W\"])\n",
-    "b1 = np.array(datos[\"layers\"][0][\"b\"])\n",
-    "\n",
-    "#capa2\n",
-    "w2 = np.array(datos[\"layers\"][1][\"W\"])\n",
-    "b2 = np.array(datos[\"layers\"][1][\"b\"])\n",
-    "\n",
-    "#activación por capa\n",
-    "activate1 = datos[\"layers\"][0][\"activation\"]\n",
-    "activate2 = datos[\"layers\"][1][\"activation\"]"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 5,
-   "id": "54b23274-7c71-418c-b5d3-d73db638e5c1",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "#definir capas densas (ambas son densas segun el json)\n",
-    "#primera capa tiene 784 entradas y 128 salidas, activacion relu\n",
-    "layer1 = DnnLib.DenseLayer(784, 128, DnnLib.ActivationType.RELU)\n",
-    "#segunda capa tiene 128 entradas(de capa 1) y 10 de salida, activacion softmax\n",
-    "layer2 = DnnLib.DenseLayer(128, 10, DnnLib.ActivationType.SOFTMAX)\n",
-    "\n",
-    "#definir pesos y biases tomados del archivo\n",
-    "#transponer para evitar errores\n",
-    "layer1.weights = w1.T\n",
-    "layer1.bias = b1.T\n",
-    "\n",
-    "layer2.weights = w2.T\n",
-    "layer2.bias = b2.T\n",
-    "\n",
-    "x = np.random.rand(1, 784)\n",
-    "\n",
-    "output = layer1.forward(x)\n",
-    "salida = layer2.forward(output)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 7,
-   "id": "6dc25efe-5742-44d2-a4da-2f883223dc46",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Salida capa 1: (1, 128)\n",
-      "Salida capa 2: (1, 10)\n",
-      "Predicción: 0.0\n"
-     ]
-    }
-   ],
-   "source": [
-    "#predicciones\n",
-    "predict = np.argmax(salida, axis =1)\n",
-    "#acurracy\n",
-    "acurracy = np.mean(predict == x)\n",
-    "\n",
-    "print(\"Salida capa 1:\", output.shape)\n",
-    "print(\"Salida capa 2:\", salida.shape)\n",
-    "print(\"Predicción:\", acurracy)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 9,
-   "id": "73df5400-40c0-4321-becd-afed43efcf76",
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Predicción: 0.10218333333333333\n"
-     ]
-    }
-   ],
-   "source": [
-    " out = layer1.forward(c)\n",
-    "sal = layer2.forward(out)\n",
-    "\n",
-    "predict = np.argmax(salida, axis =1)\n",
-    "#acurracy\n",
-    "acurracy = np.mean(predict == labels)\n",
-    "\n",
-    "print(\"Predicción:\", acurracy)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "5e2d9b94-9ac4-4a06-abc3-158d3f3571ca",
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.10.18"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+# %%
+import numpy as np
+import DnnLib
+import json
+import matplotlib.pyplot as plt
+
+# %%
+#carga de datos
+with open("mnist_mlp_pretty.json", "r") as f:
+    datos = json.load(f)
+
+#carga imagenes y labels
+data = np.load("mnist_test.npz")
+prueba = np.load("mnist_train.npz")
+
+#imagenes y labels de test
+images = data["images"]
+labels = data["labels"]
+
+#imagenes y labels de train
+image = prueba["images"]
+label = prueba["labels"]
+
+#capa1 
+w1 = np.array(datos["layers"][0]["W"])
+b1 = np.array(datos["layers"][0]["b"])
+
+#capa2
+w2 = np.array(datos["layers"][1]["W"])
+b2 = np.array(datos["layers"][1]["b"])
+
+#activación por capa
+activate1 = datos["layers"][0]["activation"]
+activate2 = datos["layers"][1]["activation"]
+
+# %%
+print(w1.shape, b1.shape, w2.shape, b2.shape)
+
+# %%
+#definir capas densas (ambas son densas segun el json)
+#primera capa tiene 784 entradas y 128 salidas, activacion relu
+layer1 = DnnLib.DenseLayer(784, 128, DnnLib.ActivationType.RELU)
+#segunda capa tiene 128 entradas(de capa 1) y 10 de salida, activacion softmax
+layer2 = DnnLib.DenseLayer(128, 10, DnnLib.ActivationType.SOFTMAX)
+
+#definir pesos y biases tomados del archivo
+#transponer para evitar errores
+layer1.weights = w1.T
+layer1.bias = b1.T
+
+layer2.weights = w2.T
+layer2.bias = b2.T
+
+x = np.random.rand(1, 784)
+
+output = layer1.forward(x)
+salida = layer2.forward(output)
+
+# %%
+#predicciones de prueba
+predict = np.argmax(salida, axis =1)
+#acurracy
+acurracy = np.mean(predict == x)
+
+#verificar que funcione la salidas de cada una con su predicción
+print("Salida capa 1:", output.shape)
+print("Salida capa 2:", salida.shape)
+print("Predicción:", acurracy)
+
+# %%
+#probar con el mnist test
+#asegurar que tengan 784 entradas
+c = images.reshape(-1, 784)
+#normalizar
+c = c/255
+
+f = image.reshape(-1,784)
+f = f/255
+
+#forward de ambas capas con las imagenes
+out = layer1.forward(c)
+sal = layer2.forward(out)
+
+#forward de ambas capas con train
+sali = layer1.forward(f)
+outs = layer2.forward(sali)
+
+# %%
+#predicción con imagenes, validar que accurate tiene los labels
+predict = np.argmax(sal, axis =1)
+#acurracy
+acurracy = np.mean(predict == labels)
+
+print("Predicción test:", acurracy * 100)
+
+#prediccion de train
+predict = np.argmax(outs, axis =1)
+#acurracy
+acurracy = np.mean(predict == label)
+
+print("Predicción entrenamiento:", acurracy * 100)
+
+
+
+# %%
+#entrenamiento de red neuronal
+#creando arreglos & variables necesarias
+
+#arreglo de layers
+layers =[layer1, layer2]
+
+#arreglo de optimizadores
+optimizers = [
+    # ("SGD", DnnLib.SGD(0.001)),
+    # ("SGD+Momentum", DnnLib.SGD(0.001, 0.9)),
+    ("Adam", DnnLib.Adam(0.001))
+    # ("RMSprop", DnnLib.RMSprop(0.001))
+]
+
+epochs = 100
+
+y = np.zeros((60000, 10), dtype=np.float64)
+y[np.arange(60000), label] = 1.0
+
+
+# %%
+#funcion de entrenamiento
+#arreglo de layers ya definidio, arreglo de todos los optimizadores, f son las entradas del mnist-train, y es el one hot, label a lo que estoy comparando y epochs epocas predefinidas 
+def entrenamiento(optimizers, f, y, label, epochs):
+    loss = []
+
+    for opt_name, optimizer in optimizers:
+        print(f"\n--- Training with {opt_name} ---")
+        # Reset network weights (create new layers)
+        layers = [ layer1, layer2 ]
+        optimizer.reset()
+        
+        for e in range(epochs):
+            #forward de ambas capas
+            output = layers[0].forward(f)
+            salida = layers[1].forward(output)
+    
+            #funcion de perdida
+            #cross entropy es mas recomendada en mnist
+            perdida = DnnLib.cross_entropy(salida, y)
+    
+            #gradiente de funcion de perdida
+            gradiente = DnnLib.cross_entropy_gradient(salida, y)
+    
+            #al tener solo dos capas se puede hacer el backpropagation directamente
+            #si no se debe utilizar for
+            #empezar por ultima capa a la primera
+            gradiente = layers[1].backward(gradiente)
+            gradiente = layers[0].backward(gradiente)
+
+            #updeater el optimizador
+            optimizer.update(layers[1])
+            optimizer.update(layers[0])
+
+            if e % 20 == 0:
+                predict = np.argmax(salida, axis =1)
+                acurracy = np.mean(predict == label)
+                loss.append(perdida)
+                print(f"Epoch {e}, Loss: {perdida:.4f}, Accuracy: {acurracy:.4f}")
+    return loss
+
+# %%
+per = []
+per = entrenamiento(optimizers, f, y, label, epochs)
+print(per)
+
+# %%
+
+
+
