@@ -3,6 +3,8 @@ import numpy as np
 import DnnLib
 import json
 import matplotlib.pyplot as plt
+import argparse
+
 
 # %%
 #carga de datos
@@ -31,7 +33,7 @@ activate1 = datos["layers"][0]["activation"]
 activate2 = datos["layers"][1]["activation"]
 
 # %%
-print(w1.shape, b1.shape, w2.shape, b2.shape)
+print(w1.shape, b1.shape, w2.shape, b2.shape, label.shape, image.shape)
 
 # %%
 #definir capas densas (ambas son densas segun el json) - parte 3
@@ -48,6 +50,7 @@ layer2.weights = w2.T
 layer2.bias = b2.T
 
 x = np.random.rand(1, 784)
+print(w1.T.shape)
 
 output = layer1.forward(x)
 salida = layer2.forward(output)
@@ -62,36 +65,6 @@ acurracy = np.mean(predict == x)
 print("Salida capa 1:", output.shape)
 print("Salida capa 2:", salida.shape)
 print("Predicción:", acurracy)
-
-# %%
-#probar con el mnist train
-#asegurar que tengan 784 entradas
-c = images.reshape(-1, 784)
-#normalizar
-c = c/255
-
-#asegurar que tengan 784 entradas
-f = image.reshape(-1, 784) / 255
-
-#forward de ambas capas con las imagenes
-out = layer1.forward(c)
-sal = layer2.forward(out)
-
-#forward con entrenamiento
-salidas = layer1.forward(f)
-outs = layer2.forward(salidas)
-
-# %%
-# Para test
-predicts = np.argmax(sal, axis=1)
-acurr = np.mean(predicts == labels)
-print("Predicción test:", acurr * 100)
-
-# Para entrenamiento
-predicts = np.argmax(outs, axis=1)
-acurr = np.mean(predicts == label)   
-print("Predicción entrenamiento:", acurr * 100)
-
 
 # %%
 #entrenamiento de red neuronal - parte 4
@@ -126,7 +99,9 @@ def entrenamiento1(capas, optimizer, f, y_onehot, label, epochs, batch_size=128)
     n = f.shape[0]
     for e in range(epochs):
         indices = np.random.permutation(n)
+        print("Barajado correcto 1.")
         f, y_onehot, label = f[indices], y_onehot[indices], label[indices]
+        print("Barajado correcto 2.")
 
         # datos para calcular promedio de loss y accuracy
         loss_epoca = 0.0
@@ -175,6 +150,7 @@ def entrenamiento1(capas, optimizer, f, y_onehot, label, epochs, batch_size=128)
 
 # %%
 #llamada de función de entrenamiento
+print("Mnist Train")
 entrenamiento1(capa, optimizers, f, y, label, epochs)
 
 # %%
@@ -198,7 +174,7 @@ def cargar(capas):
         "units": 10,
         "activation": "softmax",
         "W": capas[1].weights.tolist(),
-        "b": capas[0].bias.tolist()
+        "b": capas[1].bias.tolist()
     }
     
 
@@ -212,6 +188,40 @@ cargar(capa)
         
 
 # %%
+
+def get_args():
+    parser = argparse.ArgumentParser(description="Entrenamiento de red neuronal - Valeria")
+
+    parser.add_argument("--epochs", type=int, default=50,
+                        help="Número de épocas para entrenar")
+    parser.add_argument("--batch_size", type=int, default=128,
+                        help="Tamaño de cada batch")
+    parser.add_argument("--lr", type=float, default=0.001,
+                        help="Learning rate para el optimizador")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = get_args()
+    
+    capa1 = DnnLib.DenseLayer(784, 128, DnnLib.ActivationType.RELU)
+    capa2 = DnnLib.DenseLayer(128, 10, DnnLib.ActivationType.SOFTMAX)
+    capa = [capa1, capa2]
+
+    optimizers = DnnLib.Adam(args.lr)
+
+    pruebas = np.load(args.train_file)
+    image = pruebas["images"]
+    label = pruebas["labels"]
+
+    f = image.reshape(-1, 784).astype(np.float32) / 255
+
+    # One hot
+    n = label.shape[0]
+    y = np.zeros((n, 10), dtype=np.float64)
+    y[np.arange(n), label] = 1.0
+
+    entrenamiento1(capa, optimizers, f, y, label, epochs=args.epochs, batch_size=args.batch_size)
 
 
 
